@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: career-connect
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/vaishnav42/gitops-career-connect.git
+    targetRevision: main
+    path: helm
+    helm:
+      releaseName: career-connect
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: career-connect
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
