@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-and-push:
@@ -22,16 +19,42 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
           context: ./app/backend
           push: true
-          tags: vaishnav1133/career-connect-backend:latest
+          tags: |
+            vaishnav1133/career-connect-backend:${{ env.IMAGE_TAG }}
+            vaishnav1133/career-connect-backend:latest
 
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
           context: ./app/frontend
           push: true
-          tags: vaishnav1133/career-connect-frontend:latest
+          tags: |
+            vaishnav1133/career-connect-frontend:${{ env.IMAGE_TAG }}
+            vaishnav1133/career-connect-frontend:latest
+
+      - name: Update Helm image tags
+        shell: bash
+        run: |
+          sed -i "s/tag: \"[^\"]*\"/tag: \"${IMAGE_TAG}\"/g" helm/values.yaml
+
+      - name: Commit updated Helm values
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add helm/values.yaml
+
+          if git diff --cached --quiet; then
+            echo "No Helm changes to commit"
+          else
+            git commit -m "Update image tags to ${IMAGE_TAG}"
+            git push
+          fi
