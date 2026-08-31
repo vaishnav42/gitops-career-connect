@@ -3,7 +3,7 @@ backend:
 
   image:
     repository: vaishnav1133/career-connect-backend
-    tag: "3ddd704"
+    tag: "364d47f"
 
   resources:
     requests:
@@ -18,7 +18,7 @@ frontend:
 
   image:
     repository: vaishnav1133/career-connect-frontend
-    tag: "3ddd704"
+    tag: "364d47f"
 
   resources:
     requests:
